@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <shellapi.h>
-#include <windowscodecs.h>
+#include <wincodec.h>
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
