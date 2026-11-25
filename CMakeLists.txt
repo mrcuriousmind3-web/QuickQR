@@ -31,6 +31,7 @@ target_compile_definitions(QuickQR PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN 
 target_link_libraries(QuickQR PRIVATE
   ZXing::ZXing
   windowscodecs
+  mf
   mfplat
   mfreadwrite
   mfuuid
