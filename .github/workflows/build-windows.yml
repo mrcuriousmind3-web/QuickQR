@@ -1,4 +1,4 @@
-name: Build Windows app
+name: Build and release Windows app
 
 on:
   workflow_dispatch:
@@ -30,23 +30,44 @@ jobs:
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
 
-      - name: Package app
+      - name: Verify and package app
         shell: pwsh
         run: |
           $publish = '.\src\QuickQR\bin\Release\net10.0-windows\win-x64\publish'
-          if (!(Test-Path "$publish\QuickQR.exe")) { throw 'QuickQR.exe was not produced.' }
+          $exe = Join-Path $publish 'QuickQR.exe'
+          if (!(Test-Path $exe)) { throw "QuickQR.exe was not produced at $exe" }
+          if (!(Test-Path (Join-Path $publish 'web\index.html'))) { throw 'Required web scanner files are missing from publish output.' }
           Compress-Archive -Path "$publish\*" -DestinationPath '.\QuickQR-win-x64.zip' -Force
+          Write-Host "Built EXE: $exe"
+          Get-Item $exe | Select-Object Name, Length
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuickQR-win-x64
-          path: QuickQR-win-x64.zip
+          path: |
+            src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/QuickQR.exe
+            QuickQR-win-x64.zip
           if-no-files-found: error
 
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
         with:
-          files: QuickQR-win-x64.zip
-          generate_release_notes: true
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          target_commitish: ${{ github.sha }}
+          name: QuickQR ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          body: |
+            QuickQR Windows x64 release.
+
+            Download **QuickQR.exe** for the executable, or **QuickQR-win-x64.zip** for the complete app folder including its web scanner files.
+
+            Requires the .NET 10 Desktop Runtime and Microsoft Edge WebView2 Runtime.
+          files: |
+            src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/QuickQR.exe
+            QuickQR-win-x64.zip
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          draft: false
+          prerelease: false
+          make_latest: true
