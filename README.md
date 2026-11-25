@@ -30,7 +30,7 @@ dotnet run --project .\src\QuickQR\QuickQR.csproj
 ## Build a small Windows x64 package
 
 ```powershell
-dotnet publish .\src\QuickQR\QuickQR.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
+dotnet publish .\src\QuickQR\QuickQR.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 ```
 
 The result is written to:
