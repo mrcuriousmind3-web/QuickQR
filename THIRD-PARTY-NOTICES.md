@@ -1,11 +1,12 @@
 # Third-party notices
 
-## jsQR 1.4.0
+## ZXing-C++ v2.3.0
 
-QuickQR bundles the jsQR 1.4.0 JavaScript QR decoder locally at `src/QuickQR/web/jsQR.js`.
+QuickQR statically links the ZXing-C++ QR decoding library into the native executable.
 
-- Project: https://github.com/cozmo/jsQR
+- Project: https://github.com/zxing-cpp/zxing-cpp
+- Version: 2.3.0
 - License: Apache License 2.0
-- License text: [licenses/jsQR-LICENSE.txt](licenses/jsQR-LICENSE.txt)
+- License text: [licenses/ZXing-C++-LICENSE.txt](licenses/ZXing-C++-LICENSE.txt)
 
-The decoder runs locally in the embedded WebView and does not send image data or decoded content to a remote service.
+ZXing-C++ is built from source during the GitHub Actions Windows build. No ZXing DLL is required at runtime.
