@@ -3,8 +3,6 @@ name: Build and release Windows app
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
@@ -59,12 +57,12 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v1.0.1
+          tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
-          name: QuickQR v1.0.1
+          name: QuickQR ${{ github.ref_name }}
           body: |
             QuickQR Windows x64 v1.0.1.
 
