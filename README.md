@@ -1,45 +1,45 @@
 # QuickQR
 
-A compact Windows QR-code scanner. No Electron, no Python, no ads, no telemetry.
+**A native, ultra-lightweight Windows QR scanner.** Download one EXE and run it. No .NET, WebView2, Python, Java, browser, or separate runtime installer is required.
 
 ## Features
 
-- Scan QR codes using a webcam.
-- Scan QR codes from image files.
-- Drag and drop an image into the window.
-- Copy decoded text with one click.
-- Open decoded web links in your default browser only when you click Open.
-- The scanner UI and jsQR decoder are embedded in the EXE; QR decoding does not need an internet connection.
+- Scan QR codes from your webcam.
+- Scan PNG, JPG, BMP, GIF, TIFF and other Windows Imaging Component image formats.
+- Drag and drop an image into the app.
+- Copy decoded text to the clipboard.
+- Open a decoded HTTP/HTTPS link only when you click **Open link**.
+- QR decoding runs locally using the statically linked ZXing-C++ engine.
+- Native Win32 interface with Windows Media Foundation camera capture and Windows Imaging Component image loading.
 
-## Requirements
+## Download and run
 
-- Windows 10 or Windows 11, 64-bit.
-- **.NET 10 Desktop Runtime x64**. The plain .NET Runtime and ASP.NET Core Runtime are not sufficient for this Windows Forms application.
-- Microsoft Edge WebView2 Runtime. The release ZIP includes Microsoft's small Evergreen Bootstrapper; the app will offer to launch it if WebView2 is missing.
+1. Open the [QuickQR Releases page](https://github.com/mrcuriousmind3-web/QuickQR/releases).
+2. Download **QuickQR.exe**.
+3. Double-click it. That's it.
 
-Download the **.NET 10 Desktop Runtime x64** from the official Microsoft page: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
+Windows 10/11 x64 is required. QuickQR is statically linked with the MSVC C/C++ runtime. Its only runtime dependencies are Windows system components (Win32, Windows Imaging Component and Media Foundation).
 
-Download the **Microsoft Edge WebView2 Runtime** from: https://developer.microsoft.com/en-us/microsoft-edge/webview2/
+## Build from source
 
-## Run from source
-
-```powershell
-dotnet restore .\src\QuickQR\QuickQR.csproj
-dotnet run --project .\src\QuickQR\QuickQR.csproj
-```
-
-## Build a small Windows x64 package
+The build requires Visual Studio 2022 C++ tools, CMake 3.24+, and an internet connection to download ZXing-C++ v2.3.0 during the build. The resulting app does not need internet access for QR scanning.
 
 ```powershell
-dotnet publish .\src\QuickQR\QuickQR.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
 ```
 
-The application extracts its embedded interface files into `%LOCALAPPDATA%\QuickQR\web` on first launch. It stores its WebView2 browser data under `%LOCALAPPDATA%\QuickQR\WebView2`.
+The executable is written to `build/Release/QuickQR.exe`.
+
+## Camera troubleshooting
+
+If Windows blocks camera access, enable **Settings → Privacy & security → Camera → Let desktop apps access your camera**. QuickQR does not need a separate camera driver or plugin.
 
 ## Privacy
 
-Camera access is requested only after you press **Start camera**. Camera frames and QR decoding stay on your PC. QuickQR does not upload QR content or images. A web address contained in a QR code is never opened automatically.
+Camera frames and image files are processed locally. QR text is not uploaded. QR links are not launched automatically.
 
-## License
+## Licenses
 
-QuickQR application code: MIT. The bundled jsQR decoder is a separate third-party component licensed under Apache-2.0; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and [licenses/jsQR-LICENSE.txt](licenses/jsQR-LICENSE.txt).
+- QuickQR application code: MIT.
+- ZXing-C++: Apache-2.0. It is linked statically into the executable; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
