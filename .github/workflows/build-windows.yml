@@ -1,0 +1,53 @@
+name: Build Windows app
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish x64 app
+        run: >-
+          dotnet publish .\src\QuickQR\QuickQR.csproj
+          -c Release -r win-x64 --self-contained false
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+
+      - name: Package app
+        shell: pwsh
+        run: |
+          $publish = '.\src\QuickQR\bin\Release\net10.0-windows\win-x64\publish'
+          if (!(Test-Path "$publish\QuickQR.exe")) { throw 'QuickQR.exe was not produced.' }
+          Compress-Archive -Path "$publish\*" -DestinationPath '.\QuickQR-win-x64.zip' -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickQR-win-x64
+          path: QuickQR-win-x64.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: QuickQR-win-x64.zip
+          generate_release_notes: true
