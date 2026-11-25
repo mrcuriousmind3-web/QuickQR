@@ -1,8 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#define UNICODE
-#define _UNICODE
-
 #include <windows.h>
 #include <commdlg.h>
 #include <shellapi.h>
@@ -13,10 +8,10 @@
 #include <mferror.h>
 #include <wrl/client.h>
 
-#include <ZXing/ReadBarcode.h>
-#include <ZXing/ReaderOptions.h>
-#include <ZXing/BarcodeFormat.h>
-#include <ZXing/ImageView.h>
+#include <ReadBarcode.h>
+#include <ReaderOptions.h>
+#include <BarcodeFormat.h>
+#include <ImageView.h>
 
 #include <algorithm>
 #include <atomic>
