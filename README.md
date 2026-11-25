@@ -1,24 +1,25 @@
 # QuickQR
 
-A tiny Windows QR-code scanner. No Electron, no Python, no ads, no telemetry.
+A compact Windows QR-code scanner. No Electron, no Python, no ads, no telemetry.
 
 ## Features
 
 - Scan QR codes using a webcam.
-- Scan QR codes from PNG, JPG, GIF, BMP and WebP images.
+- Scan QR codes from image files.
 - Drag and drop an image into the window.
 - Copy decoded text with one click.
-- Open decoded web links in your default browser (only when you click Open).
-- Compact dark interface and low idle activity.
+- Open decoded web links in your default browser only when you click Open.
+- The scanner UI and jsQR decoder are embedded in the EXE; QR decoding does not need an internet connection.
 
 ## Requirements
 
 - Windows 10 or Windows 11, 64-bit.
-- .NET 10 Desktop Runtime.
-- Microsoft Edge WebView2 Runtime.
-- Internet access on the first run to load the small `jsQR` decoder from jsDelivr. WebView2 caches it for later use when possible.
+- **.NET 10 Desktop Runtime x64**. The plain .NET Runtime and ASP.NET Core Runtime are not sufficient for this Windows Forms application.
+- Microsoft Edge WebView2 Runtime. The release ZIP includes Microsoft's small Evergreen Bootstrapper; the app will offer to launch it if WebView2 is missing.
 
-The application does not upload camera frames or scanned content. QR decoding is performed locally in the WebView. The decoder script is served from jsDelivr (jsQR 1.4.0, Apache-2.0).
+Download the **.NET 10 Desktop Runtime x64** from the official Microsoft page: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
+
+Download the **Microsoft Edge WebView2 Runtime** from: https://developer.microsoft.com/en-us/microsoft-edge/webview2/
 
 ## Run from source
 
@@ -33,16 +34,12 @@ dotnet run --project .\src\QuickQR\QuickQR.csproj
 dotnet publish .\src\QuickQR\QuickQR.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 ```
 
-The result is written to:
-
-`src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/`
-
-Keep the `web` folder next to `QuickQR.exe`.
+The application extracts its embedded interface files into `%LOCALAPPDATA%\QuickQR\web` on first launch. It stores its WebView2 browser data under `%LOCALAPPDATA%\QuickQR\WebView2`.
 
 ## Privacy
 
-Camera access is requested only after you press **Start camera**. Camera frames are processed on your PC. QuickQR does not transmit QR content, images, or camera frames to a server. A web address contained in a QR code is never opened automatically.
+Camera access is requested only after you press **Start camera**. Camera frames and QR decoding stay on your PC. QuickQR does not upload QR content or images. A web address contained in a QR code is never opened automatically.
 
 ## License
 
-QuickQR application code: MIT. The jsQR decoder is a separate third-party component licensed under Apache-2.0; see the decoder's license at <https://www.apache.org/licenses/LICENSE-2.0>.
+QuickQR application code: MIT. The bundled jsQR decoder is a separate third-party component licensed under Apache-2.0; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and [licenses/jsQR-LICENSE.txt](licenses/jsQR-LICENSE.txt).
