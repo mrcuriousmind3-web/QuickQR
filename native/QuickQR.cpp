@@ -10,6 +10,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <mferror.h>
 #include <wrl/client.h>
 
 #include <ZXing/ReadBarcode.h>
@@ -20,6 +21,9 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstring>
+#include <cstdlib>
+#include <new>
 #include <cstdint>
 #include <memory>
 #include <string>
