@@ -30,16 +30,23 @@ jobs:
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
 
-      - name: Verify and package app
+      - name: Add WebView2 installer and package
         shell: pwsh
         run: |
           $publish = '.\src\QuickQR\bin\Release\net10.0-windows\win-x64\publish'
           $exe = Join-Path $publish 'QuickQR.exe'
           if (!(Test-Path $exe)) { throw "QuickQR.exe was not produced at $exe" }
-          if (!(Test-Path (Join-Path $publish 'web\index.html'))) { throw 'Required web scanner files are missing from publish output.' }
+
+          # Bundle Microsoft's small Evergreen Bootstrapper in the ZIP.
+          $webviewSetup = Join-Path $publish 'MicrosoftEdgeWebView2Setup.exe'
+          Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $webviewSetup
+
+          # The HTML/CSS/JS scanner and jsQR decoder are embedded in QuickQR.exe.
           Compress-Archive -Path "$publish\*" -DestinationPath '.\QuickQR-win-x64.zip' -Force
-          Write-Host "Built EXE: $exe"
+          Write-Host "Built EXE:"
           Get-Item $exe | Select-Object Name, Length
+          Write-Host "Packaged WebView2 bootstrapper:"
+          Get-Item $webviewSetup | Select-Object Name, Length
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -47,6 +54,7 @@ jobs:
           name: QuickQR-win-x64
           path: |
             src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/QuickQR.exe
+            src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/MicrosoftEdgeWebView2Setup.exe
             QuickQR-win-x64.zip
           if-no-files-found: error
 
@@ -54,17 +62,20 @@ jobs:
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          tag_name: v1.0.1
           target_commitish: ${{ github.sha }}
-          name: QuickQR ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          name: QuickQR v1.0.1
           body: |
-            QuickQR Windows x64 release.
+            QuickQR Windows x64 v1.0.1.
 
-            Download **QuickQR.exe** for the executable, or **QuickQR-win-x64.zip** for the complete app folder including its web scanner files.
+            The scanner UI and jsQR decoder are embedded in QuickQR.exe. No web folder or internet connection is needed for QR decoding.
 
-            Requires the .NET 10 Desktop Runtime and Microsoft Edge WebView2 Runtime.
+            Download QuickQR-win-x64.zip for QuickQR.exe plus the Microsoft WebView2 runtime bootstrapper. Or download QuickQR.exe alone if the WebView2 Runtime is already installed.
+
+            Requirements: Windows 10/11 x64 and the **.NET 10 Desktop Runtime x64** (not just the plain .NET Runtime). Install the Microsoft Edge WebView2 Runtime if prompted.
           files: |
             src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/QuickQR.exe
+            src/QuickQR/bin/Release/net10.0-windows/win-x64/publish/MicrosoftEdgeWebView2Setup.exe
             QuickQR-win-x64.zip
           fail_on_unmatched_files: true
           overwrite_files: true
