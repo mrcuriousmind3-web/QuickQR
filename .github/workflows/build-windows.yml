@@ -1,16 +1,72 @@
-name: Build native Windows app
+name: Build standalone Windows app
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-native:
     runs-on: windows-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Placeholder
-        run: echo "Native standalone rebuild is being prepared."
+
+      - name: Show build tools
+        run: |
+          cmake --version
+          cl
+
+      - name: Configure native x64 build
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compile QuickQR
+        run: cmake --build build --config Release --parallel
+
+      - name: Verify and package the single EXE
+        shell: pwsh
+        run: |
+          $built = '.\build\Release\QuickQR.exe'
+          if (!(Test-Path $built)) { throw "Native QuickQR.exe was not produced at $built" }
+          Copy-Item $built '.\QuickQR.exe' -Force
+          Compress-Archive -Path '.\QuickQR.exe' -DestinationPath '.\QuickQR-win-x64.zip' -Force
+          Write-Host 'Standalone native Windows executable:'
+          Get-Item '.\QuickQR.exe' | Select-Object Name, Length
+          Write-Host 'The app links the MSVC runtime statically and uses only Windows system APIs at runtime.'
+
+      - name: Upload native build
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickQR-native-win-x64
+          path: |
+            QuickQR.exe
+            QuickQR-win-x64.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}
+          target_commitish: ${{ github.sha }}
+          name: QuickQR ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}
+          body: |
+            QuickQR v1.1.0 — native Windows x64 build.
+
+            **One download, one EXE.** No .NET, WebView2, Python, Java, browser, VC++ redistributable, or separate setup program is required.
+
+            The QR decoder (ZXing-C++) is linked statically. Camera and image capture use Windows Media Foundation and Windows Imaging Component.
+          files: |
+            QuickQR.exe
+            QuickQR-win-x64.zip
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          draft: false
+          prerelease: false
+          make_latest: true
